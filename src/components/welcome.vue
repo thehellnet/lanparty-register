@@ -1,0 +1,26 @@
+<template>
+  <v-content>
+    <v-container class="fill-height" fluid>
+      <v-row align="center" justify="center">
+        <v-col cols="12" sm="8" md="4">
+          <v-toolbar-title>Benvenuto all'iscrizione per tornei</v-toolbar-title>
+          <v-card-actions>
+            <v-spacer />
+            <v-btn color="primary" onclick="next">Avanti</v-btn>
+          </v-card-actions>
+        </v-col>
+      </v-row>
+    </v-container>
+  </v-content>
+</template>
+
+<script lang="ts">
+import { Component, Vue } from "vue-property-decorator";
+
+@Component
+export default class WelcomeComponent extends Vue {
+  public next(): void {}
+}
+</script>
+
+<style scoped></style>
