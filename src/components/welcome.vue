@@ -6,7 +6,9 @@
           <v-toolbar-title>Benvenuto all'iscrizione per tornei</v-toolbar-title>
           <v-card-actions>
             <v-spacer />
-            <v-btn color="primary" onclick="next">Avanti</v-btn>
+            <router-link :to="{ path: '/registration' }">
+              <v-btn color="primary">Avanti</v-btn>
+            </router-link>
           </v-card-actions>
         </v-col>
       </v-row>
@@ -18,9 +20,7 @@
 import { Component, Vue } from "vue-property-decorator";
 
 @Component
-export default class WelcomeComponent extends Vue {
-  public next(): void {}
-}
+export default class WelcomeComponent extends Vue {}
 </script>
 
 <style scoped></style>
