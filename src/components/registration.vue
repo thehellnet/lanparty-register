@@ -8,8 +8,8 @@
             :key="'step-title-' + index"
             :complete="wizardStep > index + 1"
             v-bind:step="index + 1"
-            >{{ title }}</v-stepper-step
-          >
+            >{{ title }}
+          </v-stepper-step>
         </template>
       </v-stepper-header>
       <v-stepper-items>
@@ -19,13 +19,14 @@
               <v-col cols="12" sm="8" md="4">
                 <v-toolbar-title>Inserisci i tuoi dati</v-toolbar-title>
                 <v-card-text>
-                  <v-form>
+                  <v-form v-model="stepValidity['1']">
                     <v-text-field
                       label="Nome"
                       name="name"
                       prepend-icon="mdi-account"
                       type="text"
-                      v-model="data.name"
+                      :rules="[validators.required]"
+                      v-model="dataService.name"
                     />
                     <v-text-field
                       id="email"
@@ -33,7 +34,8 @@
                       name="email"
                       prepend-icon="mdi-email"
                       type="email"
-                      v-model="data.email"
+                      :rules="[validators.email]"
+                      v-model="dataService.email"
                     />
                   </v-form>
                 </v-card-text>
@@ -46,10 +48,10 @@
             <v-row align="center" justify="center">
               <v-col cols="12" sm="8" md="4">
                 <v-toolbar-title
-                  >Scegli il torneo tra quelli disponibili</v-toolbar-title
-                >
+                  >Scegli il torneo tra quelli disponibili
+                </v-toolbar-title>
                 <v-card-text>
-                  <v-form>
+                  <v-form v-model="stepValidity['2']">
                     <v-combobox
                       name="tournament"
                       v-bind:loading="isTournamentLoading"
@@ -57,6 +59,9 @@
                       solo="solo"
                       prepend-icon="mdi-gamepad"
                       v-model="data.tournamentId"
+                      :items="tournaments"
+                      item-value="id"
+                      item-text="name"
                     />
                   </v-form>
                 </v-card-text>
@@ -69,10 +74,10 @@
             <v-row align="center" justify="center">
               <v-col cols="12" sm="8" md="4">
                 <v-toolbar-title
-                  >Inserisci i dati del giocatore</v-toolbar-title
-                >
+                  >Inserisci i dati del giocatore
+                </v-toolbar-title>
                 <v-card-text>
-                  <v-form>
+                  <v-form v-model="stepValidity['3']">
                     <v-text-field
                       label="Nick"
                       name="nick"
@@ -91,8 +96,8 @@
             <v-row align="center" justify="center">
               <v-col cols="12" sm="8" md="4">
                 <v-toolbar-title
-                  >Rileggi i dati inseriti prima di confermare</v-toolbar-title
-                >
+                  >Rileggi i dati inseriti prima di confermare
+                </v-toolbar-title>
                 <v-card-text>
                   <v-list>
                     <v-list-item>
@@ -133,24 +138,25 @@
         elevation="24"
         v-on:click="wizardStep--"
         v-if="!isSending && wizardStep > 1"
-        >Indietro</v-btn
-      >
+        >Indietro
+      </v-btn>
       <v-spacer />
       <v-btn
         color="primary"
         elevation="24"
         v-on:click="wizardStep++"
         v-if="!isSending && wizardStep < stepTitles.length"
-        >Avanti</v-btn
-      >
+        :disabled="!stepValidity[wizardStep]"
+        >Avanti
+      </v-btn>
       <v-btn
         color="accent"
         elevation="24"
         v-bind:loading="isSending"
         v-on:click="sendRegistration"
         v-if="wizardStep === stepTitles.length"
-        >Conferma</v-btn
-      >
+        >Conferma
+      </v-btn>
     </v-card-actions>
   </v-container>
 </template>
@@ -158,6 +164,10 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import { Registration } from "@/models/registration";
+import { MailUtility } from "@/utilities/mail.utility";
+import dataService from "@/services/data.service";
+import apiService from "@/services/api.service";
+import { Tournament } from "@/models/tournament";
 
 @Component
 export default class RegistrationComponent extends Vue {
@@ -168,15 +178,36 @@ export default class RegistrationComponent extends Vue {
     "Riepilogo"
   ];
 
+  public dataService = dataService;
+
   public wizardStep: number = 1;
+
+  public stepValidity = {
+    1: false,
+    2: false,
+    3: false,
+    4: false
+  };
 
   public isTournamentLoading: boolean = true;
   public isSending: boolean = false;
 
+  public tournaments: Tournament[] = [];
   public data: Registration = new Registration();
+
+  public validators = {
+    required: (value: any) => !!value || "Richiesto.",
+    email: (value: string) =>
+      MailUtility.validateAddress(value) || "Mail non valida."
+  };
 
   public sendRegistration(): void {
     this.isSending = true;
+  }
+
+  async mounted() {
+    this.tournaments = await apiService.getTournaments();
+    this.isTournamentLoading = false;
   }
 }
 </script>
